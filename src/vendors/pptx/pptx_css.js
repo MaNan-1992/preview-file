@@ -1,3 +1,4 @@
+/* eslint-disable*/
 export default `section {
   width: 100%;
   height: 690px;

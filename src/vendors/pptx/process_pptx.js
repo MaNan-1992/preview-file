@@ -1,3 +1,4 @@
+/* eslint-disable*/
 'use strict'
 
 import t_xml from './t_xml'
@@ -1760,7 +1761,6 @@ function processSpPrNode (node, warpObj) {
               // Text Style - TODO
               const rowTxtStyl = getTextByPathList(thisTblStyle, ['a:band2H', 'a:tcTxStyle'])
               if (rowTxtStyl !== undefined) {
-                return
               }
               // console.log(i,thisTblStyle)
             }
@@ -1803,7 +1803,6 @@ function processSpPrNode (node, warpObj) {
               // Text Style - TODO
               const rowTxtStyl = getTextByPathList(thisTblStyle, ['a:band1H', 'a:tcTxStyle'])
               if (rowTxtStyl !== undefined) {
-                return
               }
             }
           }
@@ -2061,7 +2060,7 @@ function processSpPrNode (node, warpObj) {
     return result
   }
 
-  function genDiagram (node) {
+  function genDiagram (node, warpObj) {
     // const order = node['attrs']['order']
     const xfrmNode = getTextByPathList(node, ['p:xfrm'])
     return '<div class=\'block content\' style=\'border: 1px dotted;' +
@@ -2145,7 +2144,7 @@ function processSpPrNode (node, warpObj) {
     return algn === 'ctr' ? 'h-mid' : algn === 'r' ? 'h-right' : 'h-left'
   }
 
-  function getVerticalAlign (node, slideLayoutSpNode, slideMasterSpNode) {
+  function getVerticalAlign (node, slideLayoutSpNode, slideMasterSpNode, type, slideMasterTextStyles) {
     // 上中下對齊: X, <a:bodyPr anchor="ctr">, <a:bodyPr anchor="b">
     let anchor = getTextByPathList(node, ['p:txBody', 'a:bodyPr', 'attrs', 'anchor'])
     if (anchor === undefined) {
@@ -2158,7 +2157,7 @@ function processSpPrNode (node, warpObj) {
     return anchor === 'ctr' ? 'v-mid' : anchor === 'b' ? 'v-down' : 'v-up'
   }
 
-  function getFontType (node, type) {
+  function getFontType (node, type, slideMasterTextStyles) {
     let typeface = getTextByPathList(node, ['a:rPr', 'a:latin', 'attrs', 'typeface'])
 
     if (typeface === undefined) {
@@ -2175,7 +2174,7 @@ function processSpPrNode (node, warpObj) {
     return (typeface === undefined) ? 'inherit' : typeface
   }
 
-  function getFontColor (node) {
+  function getFontColor (node, type, slideMasterTextStyles) {
     const solidFillNode = getTextByPathStr(node, 'a:rPr a:solidFill')
 
     const color = getSolidFill(solidFillNode)
@@ -2217,15 +2216,15 @@ function processSpPrNode (node, warpObj) {
     return isNaN(fontSize) ? 'inherit' : (fontSize + 'pt')
   }
 
-  function getFontBold (node) {
+  function getFontBold (node, type, slideMasterTextStyles) {
     return (node['a:rPr'] !== undefined && node['a:rPr']['attrs']['b'] === '1') ? 'bold' : 'initial'
   }
 
-  function getFontItalic (node) {
+  function getFontItalic (node, type, slideMasterTextStyles) {
     return (node['a:rPr'] !== undefined && node['a:rPr']['attrs']['i'] === '1') ? 'italic' : 'normal'
   }
 
-  function getFontDecoration (node) {
+  function getFontDecoration (node, type, slideMasterTextStyles) {
     // /////////////////////////////Amir///////////////////////////////
     if (node['a:rPr'] !== undefined) {
       const underLine = node['a:rPr']['attrs']['u'] !== undefined ? node['a:rPr']['attrs']['u'] : 'none'
@@ -2249,7 +2248,7 @@ function processSpPrNode (node, warpObj) {
   }
 
 // //////////////////////////////////Amir/////////////////////////////////////
-  function getTextHorizontalAlign (node) {
+  function getTextHorizontalAlign (node, type, slideMasterTextStyles) {
     const getAlgn = getTextByPathList(node, ['a:pPr', 'attrs', 'algn'])
     let align = 'initial'
     if (getAlgn !== undefined) {
@@ -2282,7 +2281,7 @@ function processSpPrNode (node, warpObj) {
   }
 
 // ///////////////////////////////////////////////////////////////////
-  function getTextVerticalAlign (node) {
+  function getTextVerticalAlign (node, type, slideMasterTextStyles) {
     const baseline = getTextByPathList(node, ['a:rPr', 'attrs', 'baseline'])
     return baseline === undefined ? 'baseline' : (parseInt(baseline) / 1000) + '%'
   }
@@ -3208,13 +3207,13 @@ function getTextDirection (node, type, slideMasterTextStyles) {
 
     if (serNode['c:xVal'] !== undefined) {
       let dataRow = []
-      eachElement(serNode['c:xVal']['c:numRef']['c:numCache']['c:pt'], function (innerNode) {
+      eachElement(serNode['c:xVal']['c:numRef']['c:numCache']['c:pt'], function (innerNode, index) {
         dataRow.push(parseFloat(innerNode['c:v']))
         return ''
       })
       dataMat.push(dataRow)
       dataRow = []
-      eachElement(serNode['c:yVal']['c:numRef']['c:numCache']['c:pt'], function (innerNode) {
+      eachElement(serNode['c:yVal']['c:numRef']['c:numCache']['c:pt'], function (innerNode, index) {
         dataRow.push(parseFloat(innerNode['c:v']))
         return ''
       })
@@ -3227,12 +3226,12 @@ function getTextDirection (node, type, slideMasterTextStyles) {
         // Category (string or number)
         const rowNames = {}
         if (getTextByPathList(innerNode, ['c:cat', 'c:strRef', 'c:strCache', 'c:pt']) !== undefined) {
-          eachElement(innerNode['c:cat']['c:strRef']['c:strCache']['c:pt'], function (innerNode) {
+          eachElement(innerNode['c:cat']['c:strRef']['c:strCache']['c:pt'], function (innerNode, index) {
             rowNames[innerNode['attrs']['idx']] = innerNode['c:v']
             return ''
           })
         } else if (getTextByPathList(innerNode, ['c:cat', 'c:numRef', 'c:numCache', 'c:pt']) !== undefined) {
-          eachElement(innerNode['c:cat']['c:numRef']['c:numCache']['c:pt'], function (innerNode) {
+          eachElement(innerNode['c:cat']['c:numRef']['c:numCache']['c:pt'], function (innerNode, index) {
             rowNames[innerNode['attrs']['idx']] = innerNode['c:v']
             return ''
           })
@@ -3240,7 +3239,7 @@ function getTextDirection (node, type, slideMasterTextStyles) {
 
         // Value
         if (getTextByPathList(innerNode, ['c:val', 'c:numRef', 'c:numCache', 'c:pt']) !== undefined) {
-          eachElement(innerNode['c:val']['c:numRef']['c:numCache']['c:pt'], function (innerNode) {
+          eachElement(innerNode['c:val']['c:numRef']['c:numCache']['c:pt'], function (innerNode, index) {
             dataRow.push({x: innerNode['attrs']['idx'], y: parseFloat(innerNode['c:v'])})
             return ''
           })

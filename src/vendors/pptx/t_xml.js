@@ -1,3 +1,4 @@
+/* eslint-disable*/
 'use strict'
 
 let _order = 1
@@ -45,7 +46,7 @@ export default function t_xml (S) {
           } else {
             // doctype support
             pos += 2
-            for (; S.charCodeAt(pos) !== closeBracketCC; pos++) {return}
+            for (; S.charCodeAt(pos) !== closeBracketCC; pos++) {}
           }
           pos++
           continue
@@ -57,7 +58,7 @@ export default function t_xml (S) {
         }
         pos++
         let startNamePos = pos
-        for (; nameSpacer.indexOf(S[pos]) === -1; pos++) {return}
+        for (; nameSpacer.indexOf(S[pos]) === -1; pos++) {}
         const nodeTagName = S.slice(startNamePos, pos)
 
         // Parsing attributes
@@ -67,9 +68,7 @@ export default function t_xml (S) {
           const c = S.charCodeAt(pos)
           if ((c > 64 && c < 91) || (c > 96 && c < 123)) {
             startNamePos = pos
-            for (; nameSpacer.indexOf(S[pos]) === -1; pos++) {
-              return
-            }
+            for (; nameSpacer.indexOf(S[pos]) === -1; pos++) {}
             const name = S.slice(startNamePos, pos)
             // search beginning of the string
             let code = S.charCodeAt(pos)

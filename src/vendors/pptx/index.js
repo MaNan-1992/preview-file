@@ -1,4 +1,5 @@
-/* global , dimple */
+/* eslint-disable*/
+/* global dimple */
 'use strict'
 
 import processPptx from './process_pptx'
